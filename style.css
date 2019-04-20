@@ -1,0 +1,8 @@
+.booster {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.card {
+	display: inline-block;
+}

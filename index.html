@@ -1,0 +1,26 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>MTGA Custom boosters</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+	<div>
+	<h2>Select your MTGA log file</h2><input type="file" id="file-input" /> (should be located at C:\Users\-YOURNAME-\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt)
+	</div>
+	
+	<div id="generator">
+		<div>
+		<h2>Options</h2>
+		Restrict set: <select id="random_booster_set"></select>
+		Quantity: <input type="number" id="booster_quantity" value="6" min="1" max="12">
+		</div>
+		
+		<button onclick="gen_booster()">Generate booster</button>
+		<div id="random_booster_view"></div>
+	</div>
+				
+	<script type="text/javascript" src="mtgabooster.js"></script>
+</body>
+</html>
