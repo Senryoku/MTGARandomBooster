@@ -1,1 +1,1 @@
-"# MTGARandomBooster" 
+# MTGARandomBooster

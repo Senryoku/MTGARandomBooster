@@ -24,5 +24,5 @@ for set in Sets:
 		data = json.loads(response.content)
 		handle_response_data(data);
 		
-with open("MTGACards.json", 'w') as outfile:
+with open("data/MTGACards.json", 'w') as outfile:
 	json.dump(cards, outfile)

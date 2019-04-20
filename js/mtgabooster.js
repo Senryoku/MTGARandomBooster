@@ -3,26 +3,68 @@
 let Sets = ["m19", "xln", "rix", "dom", "grn", "rna"];
 let Cards;
 let Collection;
-let CardsByRarity = {'common':[], 'uncommon':[], 'rare':[], 'mythic':[]};
-let CardsBySet = {};
+let CardsByRarity;
+let CardsBySet;
+
+function display_collection_date() {
+	let date = localStorage.getItem("CollectionDate");
+	if(!date) return;
+	let el = document.getElementById("last-collection-update");
+	el.innerHTML = date;
+}
+
+function set_collection(coll) {
+	if(!coll) return;
+	
+	Collection = coll;
+	gen_collection_caches();
+	// Collection populated, show controls
+	GeneratorEl.style.display = "block";
+	
+	gen_booster();
+}
+
+function gen_collection_caches() {
+	CardsByRarity = {'common':[], 'uncommon':[], 'rare':[], 'mythic':[]};
+	CardsBySet = {};
+	for(s of Sets)
+		CardsBySet[s] = {'common':[], 'uncommon':[], 'rare':[], 'mythic':[]};
+	for(e in Collection) {
+		if(e in Cards) {
+			CardsByRarity[Cards[e]["rarity"]].push(e);
+			CardsBySet[Cards[e]["set"]][Cards[e]["rarity"]].push(e);
+		} else {
+			console.warn(e + " unknown.");
+		}
+	}
+}
 
 // Hide controls while there is no collection informations
 let GeneratorEl = document.getElementById("generator");
 GeneratorEl.style.display = "none";
 
 // Load all card informations
-fetch("MTGACards.json").then(function (response) {
+fetch("data/MTGACards.json").then(function (response) {
 	response.text().then(function (text) {
 		try {
 			Cards = JSON.parse(text);
+			
+			let localStorageCollection = localStorage.getItem("Collection");
+			if(localStorageCollection) {
+				try {
+					let json = JSON.parse(localStorageCollection);
+					set_collection(json);
+					display_collection_date();
+					console.log("Loaded collection from local storage");
+				} catch(e) {
+					console.error(e);
+				}
+			}
 		} catch(e) {
 			alert(e);
 		}
 	});
 });
-
-for(s of Sets)
-	CardsBySet[s] = {'common':[], 'uncommon':[], 'rare':[], 'mythic':[]};
 
 function parseMTGALog(e) {
 	let file = e.target.files[0];
@@ -37,22 +79,13 @@ function parseMTGALog(e) {
 		let collection_end = contents.indexOf('}', collection_start);
 		
 		try {
-			Collection = JSON.parse(contents.slice(collection_start, collection_end + 1));
+			set_collection(JSON.parse(contents.slice(collection_start, collection_end + 1)));
+			localStorage.setItem("Collection", JSON.stringify(Collection));
+			localStorage.setItem("CollectionDate", new Date().toLocaleDateString());
+			display_collection_date();
 		} catch(e) {
 			alert(e);
-		}
-		
-		for(e in Collection) {
-			if(e in Cards) {
-				CardsByRarity[Cards[e]["rarity"]].push(e);
-				CardsBySet[Cards[e]["set"]][Cards[e]["rarity"]].push(e);
-			} else {
-				console.warn(e + " unknown.");
-			}
-		}
-		
-		// Collection populated, show controls
-		GeneratorEl.style.display = "block";
+		}		
 	};
 	reader.readAsText(file);
 }
@@ -75,8 +108,7 @@ function get_random(arr) {
 
 function gen_card_str(arr) {
 	let c = get_random(arr);
-	console.log(Cards[c]);
-	return `<figure class="card" data-arena-id="${c}"><img src="${Cards[c]["image_uris"]["small"]}"/><figcaption>${Cards[c]["name"]}</figcaption></figure>`;
+	return `<figure class="card" data-arena-id="${c}"><img src="${Cards[c]["image_uris"]["png"]}"/><figcaption>${Cards[c]["name"]}</figcaption></figure>`;
 }
 
 // TODO? Track duplicates to avoid exceeding the amount of available copies of a specific card.

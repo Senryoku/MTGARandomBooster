@@ -3,24 +3,30 @@
 <head>
 	<meta charset="UTF-8">
 	<title>MTGA Custom boosters</title>
-	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
 	<div>
-	<h2>Select your MTGA log file</h2><input type="file" id="file-input" /> (should be located at C:\Users\-YOURNAME-\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt)
+	<h2>Select your MTGA log file</h2><input type="file" id="file-input" />
+	<small>(should be located at C:\Users\-YOURNAME-\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt)	(Last update: <div id="last-collection-update">None</div>)</small>
 	</div>
 	
 	<div id="generator">
-		<div>
-		<h2>Options</h2>
-		Restrict set: <select id="random_booster_set"></select>
-		Quantity: <input type="number" id="booster_quantity" value="6" min="1" max="12">
+		<div id="controls">
+			<button type="button" onclick="gen_booster()">Generate Booster</button>
+			<button type="button" onclick="" disabled>Export All</button>
+			<button type="button" onclick="" disabled>Export Selection</button>
+		
+			<div id="options">
+				<h2>Options</h2>
+				Restrict set: <select id="random_booster_set"></select>
+				Quantity: <input type="number" id="booster_quantity" value="6" min="1" max="12">
+			</div>
 		</div>
 		
-		<button onclick="gen_booster()">Generate booster</button>
 		<div id="random_booster_view"></div>
 	</div>
 				
-	<script type="text/javascript" src="mtgabooster.js"></script>
+	<script type="text/javascript" src="js/mtgabooster.js"></script>
 </body>
 </html>
