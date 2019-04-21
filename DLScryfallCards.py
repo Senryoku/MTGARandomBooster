@@ -8,7 +8,10 @@ APIURL = "https://api.scryfall.com/cards/arena/"
 
 def handle_response_data(data):
 	for c in data["data"]:
-		cards[c["arena_id"]] = c;
+		selection = {key:value for key,value in c.items() if key in {'name', 'set', 'cmc', 'rarity', 'collector_number', 'color_identity', 'card_faces'}}
+		if 'image_uris' in c and 'border_crop' in c['image_uris']:
+			selection['image_uris'] = {'border_crop': c['image_uris']['border_crop']}
+		cards[c["arena_id"]] = selection
 
 print("Downloading card informations...")
 cards = {}
