@@ -40,6 +40,7 @@ var app = new Vue({
 		SetRestriction: "",
 		CardOrder: "Booster",
 		DeckOrderCMC: true,
+		HideCollectionManager: true,
 		// Others
 		CardsLoaded: false
 	},

@@ -59,6 +59,8 @@ input[type="button"]:focus {
 #log-parse {
 	background-color: #111;
 	padding: 0.5em;
+	max-height: 500px;
+	transition: all 0.5s;
 }
 
 #log-parse h2 {
@@ -68,16 +70,19 @@ input[type="button"]:focus {
 	margin-right: 1em;
 }
 
-#options h2 {
-	float: left;
+#log-parse.collapsed {
+	max-height: 0;
+	overflow: hidden;
+	padding: 0;
+}
+
+#welcome {
+	margin: 1em;
 }
 
 #generator {
 	margin: 1em;
-}
-
-#options h2 {
-	margin: 1em;
+	margin-top: 0.5em;
 }
 
 .booster {
@@ -122,6 +127,19 @@ input[type="button"]:focus {
 
 #options {
 	text-align: left;
+	flex-grow: 2;
+	padding: 0.5em;
+}
+
+#options h2 {
+	display: inline-block;
+	margin: 0;
+	margin-left: 1em;
+	margin-right: 0.5em;
+}
+
+#options div {
+	display: inline-block;
 }
 
 #deck {

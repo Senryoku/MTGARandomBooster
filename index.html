@@ -9,7 +9,7 @@
 	<div id="main-vue">
 		<div v-show="!CardsLoaded" class="loading">Loading...</div>
 		
-		<div id="log-parse">
+		<div id="log-parse" v-bind:class="{collapsed: Collection && !isEmpty(Collection) && HideCollectionManager}">
 			<h2>Select your MTGA log file</h2>
 			<input type="file" id="file-input" />
 			<small>(should be located at <tt>C:\Users\-YOURNAME-\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt</tt>) <span v-if="CollectionDate != ''">(Last update: {{ CollectionDate }})</span></small>
@@ -25,6 +25,9 @@
 				</div>
 				<div>
 					<button type="button" onclick="copyToClipboard(exportMTGA(app.Deck)); alert('Deck exported to clipboard!')">Export Selection</button>
+				</div>
+				<div>
+					<button type="button" v-on:click="HideCollectionManager = !HideCollectionManager">Manage Collection</button>
 				</div>
 			
 				<div id="options">
@@ -71,7 +74,7 @@
 				</template>
 			</div>
 		</div>
-		<div v-show="!Collection || isEmpty(Collection)">
+		<div v-show="!Collection || isEmpty(Collection)" id="welcome">
 			<h1>MTGA Custom Boosters</h1>
 			Use the form above to load your MTGA collection. Once done, you'll be able to generate some boosters filled with cards from your collection and create a deck from those!
 		</div>
