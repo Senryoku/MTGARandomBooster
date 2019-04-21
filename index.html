@@ -15,7 +15,7 @@
 			<small>(should be located at C:\Users\-YOURNAME-\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt)	<span v-if="CollectionDate != ''">(Last update: {{ CollectionDate }})</span></small>
 		</div>
 		
-		<div id="generator" v-show="Collection && Collection != {}">
+		<div id="generator" v-show="Collection && !isEmpty(Collection)">
 			<div id="controls">
 				<div>
 					<button type="button" onclick="gen_booster()">Generate Booster</button>
@@ -70,6 +70,10 @@
 					<figure is="card" v-for="(card, index) in BoostersColor" v-if="!card.picked" v-bind:key="index" v-bind:card="card" v-bind:cards="Cards" v-bind:pick="pick"></figure>
 				</template>
 			</div>
+		</div>
+		<div v-show="!Collection || isEmpty(Collection)">
+			<h1>MTGA Custom Boosters</h1>
+			Use the form above to load your MTGA collection. Once done, you'll be able to generate some boosters filled with cards from your collection and create a deck from those!
 		</div>
 	</div>
 	

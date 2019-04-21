@@ -28,7 +28,7 @@ var app = new Vue({
 	data: {
 		Sets: ["m19", "xln", "rix", "dom", "grn", "rna"],
 		Cards: {},
-		Collection: [],
+		Collection: {},
 		CollectionDate: [],
 		CardsByRarity: {},
 		CardsBySet: [],
