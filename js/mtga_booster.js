@@ -3,13 +3,13 @@ function orderColor(lhs, rhs) {
 	if(!lhs || !rhs)
 		return 0;
 	if(lhs.length == 1 && rhs.length == 1)
-		return ColorOrder[lhs[0]] > ColorOrder[rhs[0]];
+		return ColorOrder[lhs[0]] - ColorOrder[rhs[0]];
 	else if(lhs.length == 1)
 		return -1;
 	else if(rhs.length == 1)
 		return 1;
 	else
-		return lhs.flat() < rhs.flat();
+		return String(lhs.flat()).localeCompare(String(rhs.flat()));
 }
 
 Vue.component('card', {
@@ -62,7 +62,7 @@ var app = new Vue({
 		},
 		BoostersColor: function() {
 			return app.Boosters.flat().sort(function (lhs, rhs) {
-				if(lhs.colors == rhs.colors)
+				if(orderColor(lhs.colors, rhs.colors) == 0)
 					return lhs.cmc > rhs.cmc;
 				return orderColor(lhs.colors, rhs.colors);
 			});
@@ -239,7 +239,7 @@ function gen_booster() {
 				localCollection[c] -= 1;
 				if(localCollection[c] == 0)
 					delete localCollection[c];
-				return {id: c, name: app.Cards[c].name, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].colors};
+				return {id: c, name: app.Cards[c].name, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].color_identity};
 			}
 		} while(true);
 	};
