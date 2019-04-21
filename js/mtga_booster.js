@@ -1,5 +1,3 @@
-// TODO? Collapse deck by CMC?
-
 var app = new Vue({
 	el: '#main-vue',
 	data: {

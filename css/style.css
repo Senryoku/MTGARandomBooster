@@ -94,8 +94,7 @@ input[type="button"]:focus {
 	background-color: #333;
 }
 
-#deck:before {
-	content: "Deck";
+#deck span.title {
 	font-size: 1.75em;
 	padding: 1em;
 	position: absolute;
@@ -104,10 +103,6 @@ input[type="button"]:focus {
 	text-transform: uppercase;
 	font-weight: 600;
 	letter-spacing: .1rem;
-}
-
-#deck:empty {
-	display: none;
 }
 
 /* Absolute Center Spinner */

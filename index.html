@@ -28,7 +28,8 @@
 				</div>
 			</div>
 			
-			<div id="deck">
+			<div id="deck" v-if="Deck.length > 0">
+				<span class="title">Deck ({{Deck.length}})</span>
 				<figure v-for="card in Deck" class="card" :data-arena-id="card.id" :data-cmc="card.cmc" v-on:click="pick(card)">
 					<img :src="Cards[card.id]['image_uris']['png']"/>
 					<figcaption>{{ card.name }}</figcaption>
