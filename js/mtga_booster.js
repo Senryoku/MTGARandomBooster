@@ -1,3 +1,28 @@
+const ColorOrder = {'W':0, 'U':1, 'B':2, 'R':3, 'G':4};
+function orderColor(lhs, rhs) {
+	console.log(lhs + " vs " + lhs);
+	if(lhs.length == 1 && rhs.length == 1)
+		return ColorOrder[lhs[0]] > ColorOrder[rhs[0]];
+	else if(lhs.length == 1)
+		return -1;
+	else if(rhs.length == 1)
+		return 1;
+	else
+		return lhs.flat() < rhs.flat();
+}
+
+Vue.component('card', {
+  template: `
+<figure class="card" :data-arena-id="card.id" :data-cmc="card.border_crop" v-on:click="pick(card)" :style="{top: 25*offset+'px', left: 0}">
+	<img v-if="cards[card.id].image_uris" :src="cards[card.id].image_uris.border_crop"/>
+	<img v-else-if="cards[card.id].card_faces[0]" :src="cards[card.id].card_faces[0].image_uris.border_crop"/>
+	<img v-else src="img/missing.svg">
+	<figcaption>{{ card.name }}</figcaption>
+</figure>
+`,
+  props: ['card', 'cards', 'pick', 'offset']
+});
+
 var app = new Vue({
 	el: '#main-vue',
 	data: {
@@ -9,13 +34,38 @@ var app = new Vue({
 		CardsBySet: [],
 		Boosters: [],
 		Deck: [],
-		
+		// Options
 		BoosterQuantity: 6,
 		SetRestriction: "",
-		
+		CardOrder: "Booster",
+		DeckOrderCMC: true,
+		// Others
 		CardsLoaded: false
 	},
 	computed: {
+		DeckCMC: function() {
+			let a = app.Deck.reduce((acc, item) => {
+			  if (!acc[item.cmc])
+				acc[item.cmc] = [];
+			  acc[item.cmc].push(item);
+			  return acc;
+			}, {});
+			return a;
+		},
+		BoostersCMC: function() {
+			return app.Boosters.flat().sort(function (lhs, rhs) {
+				if(lhs.cmc == rhs.cmc)
+					return orderColor(lhs.colors, rhs.colors);
+				return lhs.cmc > rhs.cmc;
+			});
+		},
+		BoostersColor: function() {
+			return app.Boosters.flat().sort(function (lhs, rhs) {
+				if(lhs.colors == rhs.colors)
+					return lhs.cmc > rhs.cmc;
+				return orderColor(lhs.colors, rhs.colors);
+			});
+		}
 	},
 	methods: {
 		pick: function(card) {
@@ -148,9 +198,11 @@ function parseMTGALog(e) {
 }
 
 document.getElementById('file-input').addEventListener('change', parseMTGALog, false);
+/*
 document.getElementById('image-size').addEventListener('change', function (e) { 
 	document.querySelectorAll(".card img").forEach(function(el) { el.style.width = e.target.value + "px";});
 });
+*/
 
 // Generate set selection inputs
 let random_booster_set = document.getElementById('random-booster-set');
@@ -186,7 +238,7 @@ function gen_booster() {
 				localCollection[c] -= 1;
 				if(localCollection[c] == 0)
 					delete localCollection[c];
-				return {id: c, name: app.Cards[c].name, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number};
+				return {id: c, name: app.Cards[c].name, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].colors};
 			}
 		} while(true);
 	};

@@ -10,45 +10,71 @@
 		<div v-show="!CardsLoaded" class="loading">Loading...</div>
 		
 		<div id="log-parse">
-			<h2>Select your MTGA log file</h2><input type="file" id="file-input" />
+			<h2>Select your MTGA log file</h2>
+			<input type="file" id="file-input" />
 			<small>(should be located at C:\Users\-YOURNAME-\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt)	<span v-if="CollectionDate != ''">(Last update: {{ CollectionDate }})</span></small>
 		</div>
 		
 		<div id="generator" v-show="Collection && Collection != {}">
 			<div id="controls">
-				<button type="button" onclick="gen_booster()">Generate Booster</button>
-				<button type="button" onclick="copyToClipboard(exportMTGA(app.Boosters.flat())); alert('Boosters exported to clipboard!')">Export All</button>
-				<button type="button" onclick="copyToClipboard(exportMTGA(app.Deck)); alert('Deck exported to clipboard!')">Export Selection</button>
+				<div>
+					<button type="button" onclick="gen_booster()">Generate Booster</button>
+				</div>
+				<div>
+					<button type="button" onclick="copyToClipboard(exportMTGA(app.Boosters.flat())); alert('Boosters exported to clipboard!')">Export All</button>
+				</div>
+				<div>
+					<button type="button" onclick="copyToClipboard(exportMTGA(app.Deck)); alert('Deck exported to clipboard!')">Export Selection</button>
+				</div>
 			
 				<div id="options">
 					<h2>Options</h2>
-					Restrict set: <select id="random-booster-set" v-model:value="SetRestriction"></select>
-					Quantity: <input type="number" id="booster_quantity" v-model:value="BoosterQuantity" min="1" max="12">
-					Image size: <input type="number" id="image-size" value="200" min="100" step="10" max="500">
+					<div>
+						<label>Restrict set: </label><select id="random-booster-set" v-model:value="SetRestriction"></select>
+						<label>Quantity: </label><input type="number" id="booster_quantity" v-model:value="BoosterQuantity" min="1" max="12">
+					</div>
+					<!--
+					<div>
+						<label>Image size: </label><input type="number" id="image-size" value="200" min="100" step="10" max="500">
+					</div>
+					-->
+					<div>
+						<label>Collapse by CMC in deck </label><input type="checkbox" v-model:checked="DeckOrderCMC" />
+						<label>Boosters card order: </label><select v-model:value="CardOrder"><option>Booster</option><option>CMC</option><option>Color</option></select>
+					</div>
 				</div>
 			</div>
 			
 			<div id="deck" v-if="Deck.length > 0">
 				<span class="title">Deck ({{Deck.length}})</span>
-				<figure v-for="card in Deck" class="card" :data-arena-id="card.id" :data-cmc="card.cmc" v-on:click="pick(card)">
-					<img :src="Cards[card.id]['image_uris']['png']"/>
-					<figcaption>{{ card.name }}</figcaption>
-				</figure>
+				<template v-if="DeckOrderCMC">
+					<div v-for="cmc_column in DeckCMC" class="cmc-column">
+						<figure is="card" v-for="(card, index) in cmc_column" v-bind:key="index" v-bind:card="card" v-bind:cards="Cards" v-bind:pick="pick" v-bind:offset="index"></figure>
+					</div>
+				</template>
+				<template v-else>
+					<figure is="card" v-for="(card, index) in Deck" v-bind:key="index" v-bind:card="card" v-bind:Cards="Cards" v-bind:pick="pick"></figure>
+				</template>
 			</div>
 			
 			<div id="random_booster_view">
-				<div v-for="booster in Boosters" class="booster">
-					<figure v-for="card in booster" v-if="!card.picked" class="card" :data-arena-id="card.id" :data-cmc="card.cmc" v-on:click="pick(card)">
-						<img :src="Cards[card.id]['image_uris']['png']"/>
-						<figcaption>{{ card.name }}</figcaption>
-					</figure>
-				</div>
+				<template v-if="CardOrder == 'Booster'">
+					<div v-for="booster in Boosters" class="booster">
+						<figure is="card" v-for="(card, index) in booster" v-if="!card.picked" v-bind:key="index" v-bind:card="card" v-bind:cards="Cards" v-bind:pick="pick"></figure>
+					</div>
+				</template>
+				<template v-if="CardOrder == 'CMC'">
+					<figure is="card" v-for="(card, index) in BoostersCMC" v-if="!card.picked" v-bind:key="index" v-bind:card="card" v-bind:cards="Cards" v-bind:pick="pick"></figure>
+				</template>
+				<template v-if="CardOrder == 'Color'">
+					<figure is="card" v-for="(card, index) in BoostersColor" v-if="!card.picked" v-bind:key="index" v-bind:card="card" v-bind:cards="Cards" v-bind:pick="pick"></figure>
+				</template>
 			</div>
 		</div>
 	</div>
 	
-	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-	<!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+	<!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
 	<script type="text/javascript" src="js/mtga_booster.js"></script>
 </body>
 </html>

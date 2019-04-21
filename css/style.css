@@ -55,6 +55,17 @@ input[type="button"]:focus {
 	outline: 0;
 }
 
+#log-parse h2, #options h2 {
+	display: inline-block;
+	float: left;
+	margin: 0;
+	margin-right: 1em;
+}
+
+#options h2 {
+	margin: 1em;
+}
+
 .booster {
 	display: flex;
 	flex-wrap: wrap;
@@ -72,8 +83,9 @@ input[type="button"]:focus {
 	transform-origin: bottom;
 }
 
-.card img:hover {
+.booster .card img:hover {
 	transform: scale(1.5);
+	z-index: 999;
 }
 
 #last-collection-update {
@@ -84,6 +96,15 @@ input[type="button"]:focus {
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
+}
+
+#controls > * {
+	flex-grow: 1;
+	text-align: center;
+}
+
+#options {
+	text-align: left;
 }
 
 #deck {
@@ -103,6 +124,35 @@ input[type="button"]:focus {
 	text-transform: uppercase;
 	font-weight: 600;
 	letter-spacing: .1rem;
+}
+
+.cmc-column {
+	position: relative;
+	width: 225px;
+	height: 450px;
+}
+
+.cmc-column > figure {
+	position: absolute;
+	height: 25px;
+}
+
+.cmc-column figure:hover {
+	z-index: 999;
+	overflow: visible;
+}
+
+/* No :hover outside of the figure bounds */
+.cmc-column img {
+	pointer-events: none;
+}
+/* Except if its fully visible */ 
+.cmc-column:last-child img {
+	pointer-events: auto;
+}
+
+.cmc-column figcaption {
+	display: none;
 }
 
 /* Absolute Center Spinner */
