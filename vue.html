@@ -7,6 +7,8 @@
 </head>
 <body>
 	<div id="main-vue">
+		<div v-show="!CardsLoaded" class="loading">Loading...</div>
+		
 		<div id="log-parse">
 			<h2>Select your MTGA log file</h2><input type="file" id="file-input" />
 			<small>(should be located at C:\Users\-YOURNAME-\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt)	<span v-if="CollectionDate != ''">(Last update: {{ CollectionDate }})</span></small>
@@ -15,8 +17,8 @@
 		<div id="generator" v-show="Collection && Collection != {}">
 			<div id="controls">
 				<button type="button" onclick="gen_booster()">Generate Booster</button>
-				<button type="button" onclick="" title="Work in progress..." disabled>Export All</button>
-				<button type="button" onclick="" title="Work in progress..." disabled>Export Selection</button>
+				<button type="button" onclick="copyToClipboard(exportMTGA(app.Boosters.flat())); alert('Boosters exported to clipboard!')">Export All</button>
+				<button type="button" onclick="copyToClipboard(exportMTGA(app.Deck)); alert('Deck exported to clipboard!')">Export Selection</button>
 			
 				<div id="options">
 					<h2>Options</h2>
