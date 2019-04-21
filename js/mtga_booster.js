@@ -1,6 +1,7 @@
 const ColorOrder = {'W':0, 'U':1, 'B':2, 'R':3, 'G':4};
 function orderColor(lhs, rhs) {
-	console.log(lhs + " vs " + lhs);
+	if(!lhs || !rhs)
+		return 0;
 	if(lhs.length == 1 && rhs.length == 1)
 		return ColorOrder[lhs[0]] > ColorOrder[rhs[0]];
 	else if(lhs.length == 1)
