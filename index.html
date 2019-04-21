@@ -12,7 +12,7 @@
 		<div id="log-parse">
 			<h2>Select your MTGA log file</h2>
 			<input type="file" id="file-input" />
-			<small>(should be located at C:\Users\-YOURNAME-\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt)	<span v-if="CollectionDate != ''">(Last update: {{ CollectionDate }})</span></small>
+			<small>(should be located at <tt>C:\Users\-YOURNAME-\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt</tt>) <span v-if="CollectionDate != ''">(Last update: {{ CollectionDate }})</span></small>
 		</div>
 		
 		<div id="generator" v-show="Collection && !isEmpty(Collection)">

@@ -1,6 +1,6 @@
 body {
-	margin: 1em;
-	margin-left: 2em;
+	margin: 0;
+	margin-left: 0;
 	background-color: #222;
 	color: #DDD;
 	font-family: "Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -12,6 +12,7 @@ select, option, input, button {
 	border-radius: 4px;
 	border: 1px solid #888;
 	padding: 5px 5px;
+	margin: 0.25em;
 }
 
 .button,
@@ -55,11 +56,24 @@ input[type="button"]:focus {
 	outline: 0;
 }
 
-#log-parse h2, #options h2 {
+#log-parse {
+	background-color: #111;
+	padding: 0.5em;
+}
+
+#log-parse h2 {
 	display: inline-block;
-	float: left;
+	vertical-align: middle;
 	margin: 0;
 	margin-right: 1em;
+}
+
+#options h2 {
+	float: left;
+}
+
+#generator {
+	margin: 1em;
 }
 
 #options h2 {
@@ -69,6 +83,9 @@ input[type="button"]:focus {
 .booster {
 	display: flex;
 	flex-wrap: wrap;
+	background-color: #282828;
+	border-radius: 10px;
+	margin-bottom: 1em;
 }
 
 .card {
@@ -113,6 +130,7 @@ input[type="button"]:focus {
 	position: relative;
 	margin: 1em;
 	background-color: #333;
+	border-radius: 10px;
 }
 
 #deck span.title {
