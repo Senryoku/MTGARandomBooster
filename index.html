@@ -2,7 +2,7 @@
 <html lang="en-US">
 <head>
 	<meta charset="UTF-8">
-	<title>MTGA Custom boosters</title>
+	<title>MTGA Custom Boosters</title>
 	<link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
@@ -14,15 +14,18 @@
 	<div id="generator">
 		<div id="controls">
 			<button type="button" onclick="gen_booster()">Generate Booster</button>
-			<button type="button" onclick="" disabled>Export All</button>
-			<button type="button" onclick="" disabled>Export Selection</button>
+			<button type="button" onclick="" title="Work in progress..." disabled>Export All</button>
+			<button type="button" onclick="" title="Work in progress..." disabled>Export Selection</button>
 		
 			<div id="options">
 				<h2>Options</h2>
 				Restrict set: <select id="random_booster_set"></select>
 				Quantity: <input type="number" id="booster_quantity" value="6" min="1" max="12">
+				Image size: <input type="number" id="image_size" value="200" min="100" step="10" max="500">
 			</div>
 		</div>
+		
+		<div id="deck"></div>
 		
 		<div id="random_booster_view"></div>
 	</div>

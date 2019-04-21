@@ -91,6 +91,9 @@ function parseMTGALog(e) {
 }
 
 document.getElementById('file-input').addEventListener('change', parseMTGALog, false);
+document.getElementById('image_size').addEventListener('change', function (e) { 
+	document.querySelectorAll(".card img").forEach(function(el) { el.style.width = e.target.value + "px";});
+});
 
 // Generate set selection inputs
 let random_booster_set = document.getElementById('random_booster_set');
@@ -108,7 +111,27 @@ function get_random(arr) {
 
 function gen_card_str(arr) {
 	let c = get_random(arr);
-	return `<figure class="card" data-arena-id="${c}"><img src="${Cards[c]["image_uris"]["png"]}"/><figcaption>${Cards[c]["name"]}</figcaption></figure>`;
+	return `<figure class="card" data-arena-id="${c}" data-cmc="${Cards[c]["cmc"]}" onclick="swap(this)"><img src="${Cards[c]["image_uris"]["png"]}"/><figcaption>${Cards[c]["name"]}</figcaption></figure>`;
+}
+
+function sort_by_cmc(el) {
+	let children = [];
+	for(let c of el.children)
+		children.push(c);
+	children.sort(function(lhs, rhs) { return parseInt(lhs.dataset.cmc) > parseInt(rhs.dataset.cmc); });
+	for(let c of children)
+		el.appendChild(c);
+}
+
+function swap(el) {
+	if(el.origin && el.parentNode != el.origin) {
+		el.origin.appendChild(el);
+	} else {
+		el.origin = el.parentNode;
+		let deck_el = document.getElementById("deck");
+		deck_el.appendChild(el);
+		sort_by_cmc(deck_el);
+	}
 }
 
 // TODO? Track duplicates to avoid exceeding the amount of available copies of a specific card.

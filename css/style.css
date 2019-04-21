@@ -62,10 +62,18 @@ input[type="button"]:focus {
 
 .card {
 	display: inline-block;
+	margin: 0.75em;
+	text-align: center;
 }
 
 .card img {
 	width: 200px;
+	transition: transform 0.1s ease-out;
+	transform-origin: bottom;
+}
+
+.card img:hover {
+	transform: scale(1.5);
 }
 
 #last-collection-update {
@@ -76,4 +84,28 @@ input[type="button"]:focus {
 	display: flex;
 	justify-content: space-around;
 	align-items: center;
+}
+
+#deck {
+	display: flex;
+	flex-wrap: wrap;
+	position: relative;
+	margin: 1em;
+	background-color: #333;
+}
+
+#deck:before {
+	content: "Deck";
+	font-size: 1.75em;
+	padding: 1em;
+	position: absolute;
+	top: -1.5em;
+	left: -0.5em;
+	text-transform: uppercase;
+	font-weight: 600;
+	letter-spacing: .1rem;
+}
+
+#deck:empty {
+	display: none;
 }

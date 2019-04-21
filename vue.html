@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<html lang="en-US">
+<head>
+	<meta charset="UTF-8">
+	<title>MTGA Custom Booster</title>
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+	<div id="main-vue">
+		<div id="log-parse">
+			<h2>Select your MTGA log file</h2><input type="file" id="file-input" />
+			<small>(should be located at C:\Users\-YOURNAME-\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt)	<span v-if="CollectionDate != ''">(Last update: {{ CollectionDate }})</span></small>
+		</div>
+		
+		<div id="generator" v-show="Collection && Collection != {}">
+			<div id="controls">
+				<button type="button" onclick="gen_booster()">Generate Booster</button>
+				<button type="button" onclick="" title="Work in progress..." disabled>Export All</button>
+				<button type="button" onclick="" title="Work in progress..." disabled>Export Selection</button>
+			
+				<div id="options">
+					<h2>Options</h2>
+					Restrict set: <select id="random-booster-set" v-model:value="SetRestriction"></select>
+					Quantity: <input type="number" id="booster_quantity" v-model:value="BoosterQuantity" min="1" max="12">
+					Image size: <input type="number" id="image-size" value="200" min="100" step="10" max="500">
+				</div>
+			</div>
+			
+			<div id="deck">
+				<figure v-for="card in Deck" class="card" :data-arena-id="card.id" :data-cmc="card.cmc" v-on:click="pick(card)">
+					<img :src="Cards[card.id]['image_uris']['png']"/>
+					<figcaption>{{ card.name }}</figcaption>
+				</figure>
+			</div>
+			
+			<div id="random_booster_view">
+				<div v-for="booster in Boosters" class="booster">
+					<figure v-for="card in booster" v-if="!card.picked" class="card" :data-arena-id="card.id" :data-cmc="card.cmc" v-on:click="pick(card)">
+						<img :src="Cards[card.id]['image_uris']['png']"/>
+						<figcaption>{{ card.name }}</figcaption>
+					</figure>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+	<!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+	<script type="text/javascript" src="js/mtga_booster_vue.js"></script>
+</body>
+</html>
