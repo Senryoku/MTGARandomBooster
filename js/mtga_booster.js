@@ -1,4 +1,4 @@
-// TODO? Select cards and export the list in MTGA format?
+// TODO? Collapse deck by CMC?
 
 var app = new Vue({
 	el: '#main-vue',
