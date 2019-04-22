@@ -270,7 +270,11 @@ function exportMTGA(arr) {
 	for(c of arr) {
 		let set = c.set.toUpperCase();
 		if(set == "DOM") set = "DAR"; // DOM is called DAR in MTGA
-		str += `1 ${c.name} (${set}) ${c.collector_number}\n`
+		let name = c.name;
+		let idx = name.indexOf('//');
+		if(idx != -1)
+			name = name.substr(0, idx - 1);
+		str += `1 ${name} (${set}) ${c.collector_number}\n`
 	}
 	return str;
 }
