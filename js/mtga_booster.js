@@ -14,14 +14,14 @@ function orderColor(lhs, rhs) {
 
 Vue.component('card', {
   template: `
-<figure class="card" :data-arena-id="card.id" :data-cmc="card.border_crop" v-on:click="pick(card)" :style="{top: 25*offset+'px', left: 0}">
+<figure class="card" :data-arena-id="card.id" :data-cmc="card.border_crop" v-on:click="pick(card)">
 	<img v-if="cards[card.id].image_uris" :src="cards[card.id].image_uris.border_crop"/>
 	<img v-else-if="cards[card.id].card_faces[0]" :src="cards[card.id].card_faces[0].image_uris.border_crop"/>
 	<img v-else src="img/missing.svg">
 	<figcaption>{{ card.name }}</figcaption>
 </figure>
 `,
-  props: ['card', 'cards', 'pick', 'offset']
+  props: ['card', 'cards', 'pick']
 });
 
 var app = new Vue({

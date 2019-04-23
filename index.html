@@ -60,7 +60,7 @@
 				<span class="title">Deck ({{Deck.length}})</span>
 				<template v-if="DeckOrderCMC">
 					<div v-for="cmc_column in DeckCMC" class="cmc-column">
-						<figure is="card" v-for="(card, index) in cmc_column" v-bind:key="index" v-bind:card="card" v-bind:cards="Cards" v-bind:pick="pick" v-bind:offset="index"></figure>
+						<figure is="card" v-for="(card, index) in cmc_column" v-bind:key="index" v-bind:card="card" v-bind:cards="Cards" v-bind:pick="pick"></figure>
 					</div>
 				</template>
 				<template v-else>
