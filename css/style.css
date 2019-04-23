@@ -59,8 +59,9 @@ input[type="button"]:focus {
 #log-parse {
 	background-color: #111;
 	padding: 0.5em;
-	max-height: 500px;
+	max-height: 50px;
 	transition: all 0.5s;
+	overflow: hidden;
 }
 
 #log-parse h2 {
