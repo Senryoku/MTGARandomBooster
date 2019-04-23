@@ -186,11 +186,11 @@ input[type="button"]:focus {
 }
 
 /* No :hover outside of the figure bounds */
-.cmc-column img {
+.cmc-column figure img {
 	pointer-events: none;
 }
 /* Except if its fully visible */ 
-.cmc-column img:last-child {
+.cmc-column figure:last-child img {
 	pointer-events: auto;
 }
 
