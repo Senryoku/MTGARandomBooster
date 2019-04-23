@@ -155,10 +155,9 @@ input[type="button"]:focus {
 
 #deck span.title {
 	font-size: 1.75em;
-	padding: 1em;
 	position: absolute;
-	top: -1.8em;
-	left: -0.5em;
+	top: -0.8em;
+	left: 0.5em;
 	text-transform: uppercase;
 	font-weight: 600;
 	letter-spacing: .1rem;
