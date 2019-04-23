@@ -27,7 +27,7 @@ Vue.component('card', {
 var app = new Vue({
 	el: '#main-vue',
 	data: {
-		Sets: ["m19", "xln", "rix", "dom", "grn", "rna"],
+		Sets: ["m19", "xln", "rix", "dom", "grn", "rna", "war"],
 		Cards: {},
 		Collection: {},
 		CollectionDate: [],
@@ -144,6 +144,8 @@ function gen_collection_caches() {
 	for(e in app.Collection) {
 		if(e in app.Cards) {
 			app.CardsByRarity[app.Cards[e]["rarity"]].push(e);
+			if(!app.CardsBySet[app.Cards[e]["set"]])
+				app.CardsBySet[app.Cards[e]["set"]] = {'common':[], 'uncommon':[], 'rare':[], 'mythic':[]};
 			app.CardsBySet[app.Cards[e]["set"]][app.Cards[e]["rarity"]].push(e);
 		} else {
 			console.warn(e + " unknown.");
@@ -220,28 +222,34 @@ function get_random(arr) {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
+function get_random_key(dict) {
+	return Object.keys(dict)[Math.floor(Math.random() * Object.keys(dict).length)];
+}
+
 function gen_booster() {
-	// We'll pick cards from a copy of the collection to make sure
-	// we do not end up with more copies of a card than we really have available.
-	let localCollection = clone(app.Collection);
-	
 	let subset = app.CardsByRarity;
 	if(app.SetRestriction != "")
 		subset = app.CardsBySet[app.SetRestriction];
-
-	let pick_card = function (arr) {
+	
+	// We'll pick cards from a copy of the collection to make sure
+	// we do not end up with more copies of a card than we really have available.
+	let localCollection = {'common':{}, 'uncommon':{}, 'rare':{}, 'mythic':{}};
+	for(r in subset) {
+		for(c of subset[r])
+			localCollection[r][c] = app.Collection[c];
+	}
+	
+	let pick_card = function (dict) {
 		do {
-			if(isEmpty(localCollection)) {
+			if(isEmpty(dict)) {
 				alert("Not enough cards in collection.");
-				return {};
+				return;
 			}
-			let c = get_random(arr);
-			if(localCollection[c] && localCollection[c] > 0) {
-				localCollection[c] -= 1;
-				if(localCollection[c] == 0)
-					delete localCollection[c];
-				return {id: c, name: app.Cards[c].name, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].color_identity};
-			}
+			let c = get_random_key(dict);
+			dict[c] -= 1;
+			if(dict[c] == 0)
+				delete dict[c];
+			return {id: c, name: app.Cards[c].name, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].color_identity};
 		} while(true);
 	};
 
@@ -250,16 +258,27 @@ function gen_booster() {
 	for(let booster = 0; booster < app.BoosterQuantity; ++booster) {
 		let booster = [];
 		
-		if(Math.random() * 8 < 1) // 1 Rare/Mythic
-			booster.push(pick_card(subset['mythic']));
-		else 
-			booster.push(pick_card(subset['rare']));
+		if(Math.random() * 8 < 1) { // 1 Rare/Mythic
+			let c = pick_card(localCollection['mythic']);
+			if(!c) return;
+			booster.push(c);
+		} else { 
+			let c = pick_card(localCollection['rare']);
+			if(!c) return;
+			booster.push(c);
+		}
 		
-		for(let i = 0; i < 3; ++i) // 3 Uncommons
-			booster.push(pick_card(subset['uncommon']));
+		for(let i = 0; i < 3; ++i) { // 3 Uncommons
+			let c = pick_card(localCollection['uncommon']);
+			if(!c) return;
+			booster.push(c);
+		}
 		
-		for(let i = 0; i < 10; ++i) // 10 Commons
-			booster.push(pick_card(subset['common']));
+		for(let i = 0; i < 10; ++i) { // 10 Commons
+			let c = pick_card(localCollection['common']);
+			if(!c) return;
+			booster.push(c);
+		}
 
 		app.Boosters.push(booster);
 	}
