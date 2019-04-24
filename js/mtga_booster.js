@@ -15,13 +15,12 @@ function orderColor(lhs, rhs) {
 Vue.component('card', {
   template: `
 <figure class="card" :data-arena-id="card.id" :data-cmc="card.border_crop" v-on:click="pick(card)">
-	<img v-if="cards[card.id].image_uris" :src="cards[card.id].image_uris.border_crop"/>
-	<img v-else-if="cards[card.id].card_faces[0]" :src="cards[card.id].card_faces[0].image_uris.border_crop"/>
+	<img v-if="card.image_uris[language]" :src="card.image_uris[language]"/>
 	<img v-else src="img/missing.svg">
-	<figcaption>{{ card.name }}</figcaption>
+	<figcaption>{{ card.printed_name[language] }}</figcaption>
 </figure>
 `,
-  props: ['card', 'cards', 'pick']
+  props: ['card', 'language', 'pick']
 });
 
 var app = new Vue({
@@ -41,6 +40,19 @@ var app = new Vue({
 		CardOrder: "Booster",
 		DeckOrderCMC: true,
 		HideCollectionManager: true,
+		Language: 'en',
+		Languages: [{code: 'en', name: 'English'},
+					{code: 'es', name: 'Spanish'},
+					{code: 'fr', name: 'French'},
+					{code: 'de', name: 'German'},
+					{code: 'it', name: 'Italian'},
+					{code: 'pt', name: 'Portuguese'},
+					{code: 'ja', name: 'Japanese'},
+					{code: 'ko', name: 'Korean'},
+					{code: 'ru', name: 'Russian'},
+					{code: 'zhs', name: 'Simplified Chinese'},
+					{code: 'zht', name: 'Traditional Chinese'}
+		],
 		// Others
 		CardsLoaded: false
 	},
@@ -158,6 +170,14 @@ fetch("data/MTGACards.json").then(function (response) {
 	response.text().then(function (text) {
 		try {
 			app.Cards = JSON.parse(text);
+			for(let c in app.Cards) {
+				for(let l of app.Languages) {
+					if(!(l.code in app.Cards[c]['printed_name']))
+						app.Cards[c]['printed_name'][l.code] = app.Cards[c]['name'];
+					if(!(l.code in app.Cards[c]['image_uris']))
+						app.Cards[c]['image_uris'][l.code] = app.Cards[c]['image_uris']['en'];
+				}
+			}
 			app.CardsLoaded = true;
 			
 			// Look for a localy stored collection
@@ -249,7 +269,7 @@ function gen_booster() {
 			dict[c] -= 1;
 			if(dict[c] == 0)
 				delete dict[c];
-			return {id: c, name: app.Cards[c].name, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].color_identity};
+			return {id: c, name: app.Cards[c].name, printed_name: app.Cards[c].printed_name, image_uris: app.Cards[c].image_uris, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].color_identity};
 		} while(true);
 	};
 
@@ -289,7 +309,7 @@ function exportMTGA(arr) {
 	for(c of arr) {
 		let set = c.set.toUpperCase();
 		if(set == "DOM") set = "DAR"; // DOM is called DAR in MTGA
-		let name = c.name;
+		let name = c.printed_name[app.Language];
 		let idx = name.indexOf('//');
 		if(idx != -1)
 			name = name.substr(0, idx - 1);

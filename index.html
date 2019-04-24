@@ -50,6 +50,11 @@
 					</div>
 					-->
 					<div>
+						<select v-model="Language">
+							<option v-for="option in Languages" v-bind:value="option.code">
+							{{ option.name }}
+							</option>
+						</select>
 						<label>Collapse by CMC in deck </label><input type="checkbox" v-model:checked="DeckOrderCMC" />
 						<label>Boosters card order: </label><select v-model:value="CardOrder"><option>Booster</option><option>CMC</option><option>Color</option></select>
 					</div>
@@ -60,25 +65,25 @@
 				<span class="title">Deck ({{Deck.length}})</span>
 				<template v-if="DeckOrderCMC">
 					<div v-for="cmc_column in DeckCMC" class="cmc-column">
-						<figure is="card" v-for="(card, index) in cmc_column" v-bind:key="index" v-bind:card="card" v-bind:cards="Cards" v-bind:pick="pick"></figure>
+						<figure is="card" v-for="(card, index) in cmc_column" v-bind:key="index" v-bind:card="card" v-bind:language="Language" v-bind:pick="pick"></figure>
 					</div>
 				</template>
 				<template v-else>
-					<figure is="card" v-for="(card, index) in Deck" v-bind:key="index" v-bind:card="card" v-bind:Cards="Cards" v-bind:pick="pick"></figure>
+					<figure is="card" v-for="(card, index) in Deck" v-bind:key="index" v-bind:card="card" v-bind:language="Language" v-bind:pick="pick"></figure>
 				</template>
 			</div>
 			
 			<div id="random_booster_view">
 				<template v-if="CardOrder == 'Booster'">
 					<div v-for="booster in Boosters" class="booster">
-						<figure is="card" v-for="(card, index) in booster" v-if="!card.picked" v-bind:key="index" v-bind:card="card" v-bind:cards="Cards" v-bind:pick="pick"></figure>
+						<figure is="card" v-for="(card, index) in booster" v-if="!card.picked" v-bind:key="index" v-bind:card="card" v-bind:language="Language" v-bind:pick="pick"></figure>
 					</div>
 				</template>
 				<template v-if="CardOrder == 'CMC'">
-					<figure is="card" v-for="(card, index) in BoostersCMC" v-if="!card.picked" v-bind:key="index" v-bind:card="card" v-bind:cards="Cards" v-bind:pick="pick"></figure>
+					<figure is="card" v-for="(card, index) in BoostersCMC" v-if="!card.picked" v-bind:key="index" v-bind:card="card" v-bind:language="Language" v-bind:pick="pick"></figure>
 				</template>
 				<template v-if="CardOrder == 'Color'">
-					<figure is="card" v-for="(card, index) in BoostersColor" v-if="!card.picked" v-bind:key="index" v-bind:card="card" v-bind:cards="Cards" v-bind:pick="pick"></figure>
+					<figure is="card" v-for="(card, index) in BoostersColor" v-if="!card.picked" v-bind:key="index" v-bind:card="card" v-bind:language="Language" v-bind:pick="pick"></figure>
 				</template>
 			</div>
 		</div>
