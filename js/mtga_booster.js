@@ -259,18 +259,36 @@ function gen_booster() {
 			localCollection[r][c] = app.Collection[c];
 	}
 	
+	const count_cards = function(coll) { return Object.keys(coll).reduce((acc, key) => acc + coll[key], 0); }
+
+	let comm_count = count_cards(localCollection['common']);
+	if(comm_count < 10 * app.BoosterQuantity) {
+		alert("Not enough cards (commons) in collection.");
+		return;
+	}
+	
+	let unco_count = count_cards(localCollection['uncommon']);
+	if(unco_count < 3 * app.BoosterQuantity) {
+		alert("Not enough cards (uncommons) in collection.");
+		return;
+	}
+	
+	let rm_count = count_cards(localCollection['rare']) + count_cards(localCollection['mythic']);
+	if(rm_count < app.BoosterQuantity) {
+		alert("Not enough cards (rares & mythics) in collection.");
+		return;
+	}
+	
 	let pick_card = function (dict) {
-		do {
-			if(isEmpty(dict)) {
-				alert("Not enough cards in collection.");
-				return;
-			}
-			let c = get_random_key(dict);
-			dict[c] -= 1;
-			if(dict[c] == 0)
-				delete dict[c];
-			return {id: c, name: app.Cards[c].name, printed_name: app.Cards[c].printed_name, image_uris: app.Cards[c].image_uris, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].color_identity};
-		} while(true);
+		if(isEmpty(dict)) { // Should not happen anymore
+			alert("[pick_card] Not enough cards in collection.");
+			return;
+		}
+		let c = get_random_key(dict);
+		dict[c] -= 1;
+		if(dict[c] == 0)
+			delete dict[c];
+		return {id: c, name: app.Cards[c].name, printed_name: app.Cards[c].printed_name, image_uris: app.Cards[c].image_uris, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].color_identity};
 	};
 
 	app.Deck = [];
@@ -278,20 +296,23 @@ function gen_booster() {
 	for(let booster = 0; booster < app.BoosterQuantity; ++booster) {
 		let booster = [];
 		
-		if(Math.random() * 8 < 1) { // 1 Rare/Mythic
-			let c = pick_card(localCollection['mythic']);
-			if(!c) return;
-			booster.push(c);
-		} else { 
-			let c = pick_card(localCollection['rare']);
-			if(!c) return;
-			booster.push(c);
+		 // 1 Rare/Mythic
+		if(isEmpty(localCollection['mythic']) && isEmpty(localCollection['rare'])) {
+			alert("Not enough cards in collection.");
+			return;
+		} else if(isEmpty(localCollection['mythic'])) {
+			booster.push(pick_card(localCollection['rare']));
+		} else if(isEmpty(localCollection['rare'])) {
+			booster.push(pick_card(localCollection['mythic']));
+		} else {
+			if(Math.random() * 8 < 1) {
+				booster.push(pick_card(localCollection['mythic']));
+			} else {
+				booster.push(pick_card(localCollection['rare']));
+			}
 		}
-		
 		for(let i = 0; i < 3; ++i) { // 3 Uncommons
-			let c = pick_card(localCollection['uncommon']);
-			if(!c) return;
-			booster.push(c);
+			booster.push(pick_card(localCollection['uncommon']));
 		}
 		
 		for(let i = 0; i < 10; ++i) { // 10 Commons
