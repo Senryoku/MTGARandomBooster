@@ -106,7 +106,7 @@ input[type="button"]:focus {
 	transform-origin: bottom;
 }
 
-.booster .card img:hover {
+#random_booster_view .card img:hover {
 	transform: scale(1.5);
 	z-index: 999;
 }
