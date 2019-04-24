@@ -259,23 +259,23 @@ function gen_booster() {
 			localCollection[r][c] = app.Collection[c];
 	}
 	
-	const count_cards = function(coll) { return Object.keys(coll).reduce((acc, key) => acc + coll[key], 0); }
+	const count_cards = function(coll) { return Object.values(coll).reduce((acc, val) => acc + val, 0); };
 
 	let comm_count = count_cards(localCollection['common']);
 	if(comm_count < 10 * app.BoosterQuantity) {
-		alert("Not enough cards (commons) in collection.");
+		alert(`Not enough cards (${comm_count}/${10 * app.BoosterQuantity} commons) in collection.`);
 		return;
 	}
 	
 	let unco_count = count_cards(localCollection['uncommon']);
 	if(unco_count < 3 * app.BoosterQuantity) {
-		alert("Not enough cards (uncommons) in collection.");
+		alert(`Not enough cards (${unco_count}/${3 * app.BoosterQuantity} uncommons) in collection.`);
 		return;
 	}
 	
 	let rm_count = count_cards(localCollection['rare']) + count_cards(localCollection['mythic']);
 	if(rm_count < app.BoosterQuantity) {
-		alert("Not enough cards (rares & mythics) in collection.");
+		alert(`Not enough cards (${rm_count}/${app.BoosterQuantity} rares & mythics) in collection.`);
 		return;
 	}
 	
@@ -305,21 +305,17 @@ function gen_booster() {
 		} else if(isEmpty(localCollection['rare'])) {
 			booster.push(pick_card(localCollection['mythic']));
 		} else {
-			if(Math.random() * 8 < 1) {
+			if(Math.random() * 8 < 1)
 				booster.push(pick_card(localCollection['mythic']));
-			} else {
+			else
 				booster.push(pick_card(localCollection['rare']));
-			}
-		}
-		for(let i = 0; i < 3; ++i) { // 3 Uncommons
-			booster.push(pick_card(localCollection['uncommon']));
 		}
 		
-		for(let i = 0; i < 10; ++i) { // 10 Commons
-			let c = pick_card(localCollection['common']);
-			if(!c) return;
-			booster.push(c);
-		}
+		for(let i = 0; i < 3; ++i) // 3 Uncommons
+			booster.push(pick_card(localCollection['uncommon']));
+		
+		for(let i = 0; i < 10; ++i) // 10 Commons
+			booster.push(pick_card(localCollection['common']));
 
 		app.Boosters.push(booster);
 	}
