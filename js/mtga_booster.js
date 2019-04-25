@@ -293,7 +293,7 @@ function gen_booster() {
 
 	app.Deck = [];
 	app.Boosters = [];
-	for(let booster = 0; booster < app.BoosterQuantity; ++booster) {
+	for(let b = 0; b < app.BoosterQuantity; ++b) {
 		let booster = [];
 		
 		 // 1 Rare/Mythic
