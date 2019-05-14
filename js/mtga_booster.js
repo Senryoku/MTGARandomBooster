@@ -53,12 +53,15 @@ var app = new Vue({
 					{code: 'zhs', name: 'Simplified Chinese'},
 					{code: 'zht', name: 'Traditional Chinese'}
 		],
+		ShowCollectionStats: false,
+		MissingRaresSet: 'war',
+		ShowNonBoosterCards: false,
 		// Others
 		CardsLoaded: false
 	},
 	computed: {
 		DeckCMC: function() {
-			let a = app.Deck.reduce((acc, item) => {
+			let a = this.Deck.reduce((acc, item) => {
 			  if (!acc[item.cmc])
 				acc[item.cmc] = [];
 			  acc[item.cmc].push(item);
@@ -67,31 +70,214 @@ var app = new Vue({
 			return a;
 		},
 		BoostersCMC: function() {
-			return app.Boosters.flat().sort(function (lhs, rhs) {
+			return this.Boosters.flat().sort(function (lhs, rhs) {
 				if(lhs.cmc == rhs.cmc)
 					return orderColor(lhs.colors, rhs.colors);
 				return lhs.cmc > rhs.cmc;
 			});
 		},
 		BoostersColor: function() {
-			return app.Boosters.flat().sort(function (lhs, rhs) {
+			return this.Boosters.flat().sort(function (lhs, rhs) {
 				if(orderColor(lhs.colors, rhs.colors) == 0)
 					return lhs.cmc > rhs.cmc;
 				return orderColor(lhs.colors, rhs.colors);
 			});
+		},
+		MissingRares: function() {
+			let rares = [];
+			for(let c in this.Cards) {
+				if((this.MissingRaresSet == "" || this.MissingRaresSet == this.Cards[c].set) && (this.ShowNonBoosterCards || this.Cards[c].in_booster) && this.Cards[c].rarity == "rare" && this.Cards[c].count < 4)
+					rares.push(this.Cards[c]);
+			}
+			return rares;
+		},
+		MissingMythics: function() {
+			let rares = [];
+			for(let c in this.Cards) {
+				if((this.MissingRaresSet == "" || this.MissingRaresSet == this.Cards[c].set) && (this.ShowNonBoosterCards || this.Cards[c].in_booster) && this.Cards[c].rarity == "mythic" && this.Cards[c].count < 4)
+					rares.push(this.Cards[c]);
+			}
+			return rares;
 		}
 	},
 	methods: {
 		pick: function(card) {
 			if(card.picked) {
-				app.Deck = arrayRemove(app.Deck, card);
+				this.Deck = arrayRemove(this.Deck, card);
 				card.picked = false;
 			} else {
-				app.Deck.push(card);
-				app.Deck.sort(function(lhs, rhs) { return lhs.cmc > rhs.cmc; });
+				this.Deck.push(card);
+				this.Deck.sort(function(lhs, rhs) { return lhs.cmc > rhs.cmc; });
 				card.picked = true;
 			}
+		},
+		set_collection: function(coll) {
+			if(!coll) return;
+			
+			this.Collection = coll;
+			this.gen_collection_caches();
+			this.CollectionDate = localStorage.getItem("CollectionDate");
+			
+			this.gen_booster();
+		},
+		gen_collection_caches: function() {
+			this.CardsByRarity = {'common':[], 'uncommon':[], 'rare':[], 'mythic':[]};
+			this.CardsBySet = {};
+			for(let s of this.Sets)
+				this.CardsBySet[s] = {'common':[], 'uncommon':[], 'rare':[], 'mythic':[]};
+			for(let c in this.Cards)
+				this.Cards[c].count = 0;
+			for(e in this.Collection) {
+				if(e in this.Cards) {
+					this.Cards[e].count = parseInt(this.Collection[e]);
+					this.CardsByRarity[this.Cards[e]["rarity"]].push(e);
+					if(!this.CardsBySet[this.Cards[e]["set"]])
+						this.CardsBySet[this.Cards[e]["set"]] = {'common':[], 'uncommon':[], 'rare':[], 'mythic':[]};
+					this.CardsBySet[this.Cards[e]["set"]][this.Cards[e]["rarity"]].push(e);
+				} else {
+					console.warn(e + " unknown.");
+				}
+			}
+		},
+		parseMTGALog: function(e) {
+			let file = e.target.files[0];
+			if (!file) {
+				return;
+			}
+			var reader = new FileReader();
+			reader.onload = function(e) {
+				let contents = e.target.result;
+				let call_idx = contents.lastIndexOf("PlayerInventory.GetPlayerCardsV3");
+				let collection_start = contents.indexOf('{', call_idx);
+				let collection_end = contents.indexOf('}', collection_start);
+				
+				try {
+					let collStr = contents.slice(collection_start, collection_end + 1);
+					localStorage.setItem("Collection", collStr);
+					localStorage.setItem("CollectionDate", new Date().toLocaleDateString());
+					app.set_collection(JSON.parse(collStr));
+				} catch(e) {
+					alert(e);
+				}		
+			};
+			reader.readAsText(file);
+		},
+		gen_booster: function() {
+			let subset = app.CardsByRarity;
+			if(app.SetRestriction != "")
+				subset = app.CardsBySet[app.SetRestriction];
+			
+			// We'll pick cards from a copy of the collection to make sure
+			// we do not end up with more copies of a card than we really have available.
+			let localCollection = {'common':{}, 'uncommon':{}, 'rare':{}, 'mythic':{}};
+			for(r in subset) {
+				for(c of subset[r])
+					localCollection[r][c] = app.Collection[c];
+			}
+			
+			const count_cards = function(coll) { return Object.values(coll).reduce((acc, val) => acc + val, 0); };
+
+			let comm_count = count_cards(localCollection['common']);
+			if(comm_count < 10 * app.BoosterQuantity) {
+				alert(`Not enough cards (${comm_count}/${10 * app.BoosterQuantity} commons) in collection.`);
+				return;
+			}
+			
+			let unco_count = count_cards(localCollection['uncommon']);
+			if(unco_count < 3 * app.BoosterQuantity) {
+				alert(`Not enough cards (${unco_count}/${3 * app.BoosterQuantity} uncommons) in collection.`);
+				return;
+			}
+			
+			let rm_count = count_cards(localCollection['rare']) + count_cards(localCollection['mythic']);
+			if(rm_count < app.BoosterQuantity) {
+				alert(`Not enough cards (${rm_count}/${app.BoosterQuantity} rares & mythics) in collection.`);
+				return;
+			}
+			
+			let pick_card = function (dict) {
+				if(isEmpty(dict)) { // Should not happen anymore
+					alert("[pick_card] Not enough cards in collection.");
+					return;
+				}
+				let c = get_random_key(dict);
+				dict[c] -= 1;
+				if(dict[c] == 0)
+					delete dict[c];
+				return {id: c, name: app.Cards[c].name, printed_name: app.Cards[c].printed_name, image_uris: app.Cards[c].image_uris, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].color_identity, in_booster: app.Cards[c].in_booster};
+			};
+
+			app.Deck = [];
+			app.Boosters = [];
+			for(let b = 0; b < app.BoosterQuantity; ++b) {
+				let booster = [];
+				
+				 // 1 Rare/Mythic
+				if(isEmpty(localCollection['mythic']) && isEmpty(localCollection['rare'])) {
+					alert("Not enough cards in collection.");
+					return;
+				} else if(isEmpty(localCollection['mythic'])) {
+					booster.push(pick_card(localCollection['rare']));
+				} else if(isEmpty(localCollection['rare'])) {
+					booster.push(pick_card(localCollection['mythic']));
+				} else {
+					if(Math.random() * 8 < 1)
+						booster.push(pick_card(localCollection['mythic']));
+					else
+						booster.push(pick_card(localCollection['rare']));
+				}
+				
+				for(let i = 0; i < 3; ++i) // 3 Uncommons
+					booster.push(pick_card(localCollection['uncommon']));
+				
+				for(let i = 0; i < 10; ++i) // 10 Commons
+					booster.push(pick_card(localCollection['common']));
+
+				app.Boosters.push(booster);
+			}
 		}
+	},
+	mounted: function() {
+		// Load all card informations
+		fetch("data/MTGACards.json").then(function (response) {
+			response.text().then(function (text) {
+				try {
+					app.Cards = JSON.parse(text);
+					for(let c in app.Cards) {
+						if(!('in_booster' in app.Cards[c]))
+							app.Cards[c].in_booster = true;
+						for(let l of app.Languages) {
+							if(!(l.code in app.Cards[c]['printed_name']))
+								app.Cards[c]['printed_name'][l.code] = app.Cards[c]['name'];
+							if(!(l.code in app.Cards[c]['image_uris']))
+								app.Cards[c]['image_uris'][l.code] = app.Cards[c]['image_uris']['en'];
+						}
+					}
+					app.CardsLoaded = true;
+					
+					// Look for a localy stored collection
+					let localStorageCollection = localStorage.getItem("Collection");
+					if(localStorageCollection) {
+						try {
+							let json = JSON.parse(localStorageCollection);
+							app.set_collection(json);
+							console.log("Loaded collection from local storage");
+						} catch(e) {
+							console.error(e);
+						}
+					}
+				} catch(e) {
+					alert(e);
+				}
+			});
+		});
+
+		/*
+		document.getElementById('file-input').addEventListener('change', parseMTGALog, false);
+		document.getElementById('image-size').addEventListener('change', function (e) { 
+			document.querySelectorAll(".card img").forEach(function(el) { el.style.width = e.target.value + "px";});
+		});
+		*/
 	}
 });
 
@@ -110,9 +296,17 @@ function isEmpty(obj) {
 }
 
 function arrayRemove(arr, value) {
-	return arr.filter(function(ele){
+	return arr.filter(function(ele) {
 	   return ele != value;
 	});
+}
+
+function get_random(arr) {
+	return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function get_random_key(dict) {
+	return Object.keys(dict)[Math.floor(Math.random() * Object.keys(dict).length)];
 }
 
 // https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
@@ -135,191 +329,6 @@ const copyToClipboard = str => {
 		document.getSelection().addRange(selected); // Restore the original selection
 	}
 };
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-function set_collection(coll) {
-	if(!coll) return;
-	
-	app.Collection = coll;
-	gen_collection_caches();
-	app.CollectionDate = localStorage.getItem("CollectionDate");
-	
-	gen_booster();
-}
-
-function gen_collection_caches() {
-	app.CardsByRarity = {'common':[], 'uncommon':[], 'rare':[], 'mythic':[]};
-	app.CardsBySet = {};
-	for(s of app.Sets)
-		app.CardsBySet[s] = {'common':[], 'uncommon':[], 'rare':[], 'mythic':[]};
-	for(e in app.Collection) {
-		if(e in app.Cards) {
-			app.CardsByRarity[app.Cards[e]["rarity"]].push(e);
-			if(!app.CardsBySet[app.Cards[e]["set"]])
-				app.CardsBySet[app.Cards[e]["set"]] = {'common':[], 'uncommon':[], 'rare':[], 'mythic':[]};
-			app.CardsBySet[app.Cards[e]["set"]][app.Cards[e]["rarity"]].push(e);
-		} else {
-			console.warn(e + " unknown.");
-		}
-	}
-}
-
-// Load all card informations
-fetch("data/MTGACards.json").then(function (response) {
-	response.text().then(function (text) {
-		try {
-			app.Cards = JSON.parse(text);
-			for(let c in app.Cards) {
-				for(let l of app.Languages) {
-					if(!(l.code in app.Cards[c]['printed_name']))
-						app.Cards[c]['printed_name'][l.code] = app.Cards[c]['name'];
-					if(!(l.code in app.Cards[c]['image_uris']))
-						app.Cards[c]['image_uris'][l.code] = app.Cards[c]['image_uris']['en'];
-				}
-			}
-			app.CardsLoaded = true;
-			
-			// Look for a localy stored collection
-			let localStorageCollection = localStorage.getItem("Collection");
-			if(localStorageCollection) {
-				try {
-					let json = JSON.parse(localStorageCollection);
-					set_collection(json);
-					console.log("Loaded collection from local storage");
-				} catch(e) {
-					console.error(e);
-				}
-			}
-		} catch(e) {
-			alert(e);
-		}
-	});
-});
-
-function parseMTGALog(e) {
-	let file = e.target.files[0];
-	if (!file) {
-		return;
-	}
-	var reader = new FileReader();
-	reader.onload = function(e) {
-		let contents = e.target.result;
-		let call_idx = contents.lastIndexOf("PlayerInventory.GetPlayerCardsV3");
-		let collection_start = contents.indexOf('{', call_idx);
-		let collection_end = contents.indexOf('}', collection_start);
-		
-		try {
-			let collStr = contents.slice(collection_start, collection_end + 1);
-			localStorage.setItem("Collection", collStr);
-			localStorage.setItem("CollectionDate", new Date().toLocaleDateString());
-			set_collection(JSON.parse(collStr));
-		} catch(e) {
-			alert(e);
-		}		
-	};
-	reader.readAsText(file);
-}
-
-document.getElementById('file-input').addEventListener('change', parseMTGALog, false);
-/*
-document.getElementById('image-size').addEventListener('change', function (e) { 
-	document.querySelectorAll(".card img").forEach(function(el) { el.style.width = e.target.value + "px";});
-});
-*/
-
-// Generate set selection inputs
-let random_booster_set = document.getElementById('random-booster-set');
-let option = document.createElement('option');
-random_booster_set.appendChild(option);
-for(s in app.Sets) {
-	let option = document.createElement('option');
-	option.innerHTML = app.Sets[s];
-	random_booster_set.appendChild(option);
-}
-
-function get_random(arr) {
-	return arr[Math.floor(Math.random() * arr.length)];
-}
-
-function get_random_key(dict) {
-	return Object.keys(dict)[Math.floor(Math.random() * Object.keys(dict).length)];
-}
-
-function gen_booster() {
-	let subset = app.CardsByRarity;
-	if(app.SetRestriction != "")
-		subset = app.CardsBySet[app.SetRestriction];
-	
-	// We'll pick cards from a copy of the collection to make sure
-	// we do not end up with more copies of a card than we really have available.
-	let localCollection = {'common':{}, 'uncommon':{}, 'rare':{}, 'mythic':{}};
-	for(r in subset) {
-		for(c of subset[r])
-			localCollection[r][c] = app.Collection[c];
-	}
-	
-	const count_cards = function(coll) { return Object.values(coll).reduce((acc, val) => acc + val, 0); };
-
-	let comm_count = count_cards(localCollection['common']);
-	if(comm_count < 10 * app.BoosterQuantity) {
-		alert(`Not enough cards (${comm_count}/${10 * app.BoosterQuantity} commons) in collection.`);
-		return;
-	}
-	
-	let unco_count = count_cards(localCollection['uncommon']);
-	if(unco_count < 3 * app.BoosterQuantity) {
-		alert(`Not enough cards (${unco_count}/${3 * app.BoosterQuantity} uncommons) in collection.`);
-		return;
-	}
-	
-	let rm_count = count_cards(localCollection['rare']) + count_cards(localCollection['mythic']);
-	if(rm_count < app.BoosterQuantity) {
-		alert(`Not enough cards (${rm_count}/${app.BoosterQuantity} rares & mythics) in collection.`);
-		return;
-	}
-	
-	let pick_card = function (dict) {
-		if(isEmpty(dict)) { // Should not happen anymore
-			alert("[pick_card] Not enough cards in collection.");
-			return;
-		}
-		let c = get_random_key(dict);
-		dict[c] -= 1;
-		if(dict[c] == 0)
-			delete dict[c];
-		return {id: c, name: app.Cards[c].name, printed_name: app.Cards[c].printed_name, image_uris: app.Cards[c].image_uris, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].color_identity};
-	};
-
-	app.Deck = [];
-	app.Boosters = [];
-	for(let b = 0; b < app.BoosterQuantity; ++b) {
-		let booster = [];
-		
-		 // 1 Rare/Mythic
-		if(isEmpty(localCollection['mythic']) && isEmpty(localCollection['rare'])) {
-			alert("Not enough cards in collection.");
-			return;
-		} else if(isEmpty(localCollection['mythic'])) {
-			booster.push(pick_card(localCollection['rare']));
-		} else if(isEmpty(localCollection['rare'])) {
-			booster.push(pick_card(localCollection['mythic']));
-		} else {
-			if(Math.random() * 8 < 1)
-				booster.push(pick_card(localCollection['mythic']));
-			else
-				booster.push(pick_card(localCollection['rare']));
-		}
-		
-		for(let i = 0; i < 3; ++i) // 3 Uncommons
-			booster.push(pick_card(localCollection['uncommon']));
-		
-		for(let i = 0; i < 10; ++i) // 10 Commons
-			booster.push(pick_card(localCollection['common']));
-
-		app.Boosters.push(booster);
-	}
-}
 
 function exportMTGA(arr) {
 	let str = "";

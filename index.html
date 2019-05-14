@@ -11,7 +11,7 @@
 	<meta property="og:url" content="https://senryoku.github.io/MTGARandomBooster/">
 	<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/en/a/aa/Magic_the_gathering-card_back.jpg">
 	<meta property="og:description" content="Generate random boosters from the cards of your own MTGArena collection and craft your sealed deck to play what's closest to limited on MTGA with your friends using Direct Challenge.">
-	<meta property="og:site_name" content="MTGA Custom">
+	<meta property="og:site_name" content="MTGA Custom Boosters">
 </head>
 <body>
 	<div id="main-vue">
@@ -19,11 +19,34 @@
 		
 		<div id="log-parse" v-bind:class="{collapsed: Collection && !isEmpty(Collection) && HideCollectionManager}">
 			<h2>Select your MTGA log file</h2>
-			<input type="file" id="file-input" />
+			<input type="file" id="file-input" @change="parseMTGALog" />
 			<small>(should be located at <tt>C:\Users\-YOURNAME-\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt</tt>) <span v-if="CollectionDate != ''">(Last update: {{ CollectionDate }})</span></small>
 		</div>
 		
 		<div id="generator" v-show="Collection && !isEmpty(Collection)">
+			<div id="collection-stats" v-show="ShowCollectionStats">
+				<h1>Collection Stats</h1>
+				<div class="close" v-on:click="ShowCollectionStats = false"></div>
+				<h2>Missing Cards</h2>
+				<div>
+					<lable>Restrict set: </label><select v-model="MissingRaresSet">
+						<option value=""></option>
+						<option v-for="set in Sets" v-bind:value="set">
+						{{ set }}
+						</option>
+					</select>
+					<input type="checkbox" v-model="ShowNonBoosterCards">Show cards non obtainable in boosters</input>
+				</div>
+				<h3>Rares ({{ MissingRares.length }})</h3>
+				<ul>
+					<li v-for="(card, index) in MissingRares"><figure><img :src="card.image_uris[Language]" width="100px" /><figcaption>{{ card.printed_name[Language] }} x{{4 - card.count}} <span v-if="!ShowNonBoosterCards && MissingRaresSet != ''">({{ (100 * (4 - card.count)/MissingRares.length).toFixed(2) }} %)</span></figcaption></li>
+				</ul>
+				<h3>Mythics ({{ MissingMythics.length }})</h3>
+				<ul>
+					<li v-for="(card, index) in MissingMythics"><figure><img :src="card.image_uris[Language]" width="100px" /><figcaption>{{ card.printed_name[Language] }} x{{4 - card.count}} <span v-if="!ShowNonBoosterCards && MissingRaresSet != ''">({{ (100 * (4 - card.count)/MissingMythics.length).toFixed(2) }} %)</span></figcaption></li>
+				</ul>
+			</div>
+		
 			<div id="controls">
 				<div>
 					<button type="button" onclick="gen_booster()">Generate Booster</button>
@@ -35,13 +58,21 @@
 					<button type="button" onclick="copyToClipboard(exportMTGA(app.Deck)); alert('Deck exported to clipboard!')">Export Selection</button>
 				</div>
 				<div>
-					<button type="button" v-on:click="HideCollectionManager = !HideCollectionManager">Manage Collection</button>
+					<button type="button" v-on:click="HideCollectionManager = !HideCollectionManager">Update Collection</button>
+				</div>
+				<div>
+					<button type="button" v-on:click="ShowCollectionStats = true">Collection Stats</button>
 				</div>
 			
 				<div id="options">
 					<h2>Options</h2>
 					<div>
-						<label>Restrict set: </label><select id="random-booster-set" v-model:value="SetRestriction"></select>
+						<label>Restrict set: </label><select id="random-booster-set" v-model:value="SetRestriction">
+							<option value=""></option>
+							<option v-for="set in Sets" v-bind:value="set">
+							{{ set }}
+							</option>
+						</select>
 						<label>Quantity: </label><input type="number" id="booster_quantity" v-model:value="BoosterQuantity" min="1" max="24">
 					</div>
 					<!--

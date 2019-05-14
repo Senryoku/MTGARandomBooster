@@ -4,6 +4,8 @@ import requests
 import ijson
 import os
 import gzip
+import urllib
+import requests
 
 # Removed ana on purpose, this set is (mostly?) useless
 Sets = ['m19', 'xln', 'rix', 'dom', 'grn', 'rna', 'war']
@@ -29,6 +31,18 @@ if not os.path.isfile(BulkDataArenaPath):
 		with open(BulkDataArenaPath, 'w') as outfile:
 			json.dump(cards, outfile)
 
+# Tag non booster card as such
+NonBoosterCards = []
+response = requests.get("https://api.scryfall.com/cards/search?{}".format(urllib.parse.urlencode({'q': 'game:arena -in:booster'})))
+data = json.loads(response.content)
+for c in data['data']:
+	NonBoosterCards.append(c['arena_id'])
+while(data["has_more"]):
+	response = requests.get(data["next_page"])
+	data = json.loads(response.content)
+	for c in data['data']:
+		NonBoosterCards.append(c['arena_id'])
+			
 with open(BulkDataArenaPath, 'r', encoding="utf8") as file:
 	cards = {}
 	translations = {}
@@ -53,6 +67,8 @@ with open(BulkDataArenaPath, 'r', encoding="utf8") as file:
 			cards[c['arena_id']] = {}
 		if c['lang'] == 'en':
 			selection = {key:value for key,value in c.items() if key in {'name', 'set', 'cmc', 'rarity', 'collector_number', 'color_identity'}}
+			if c['arena_id'] in NonBoosterCards:
+				selection['in_booster'] = False;
 			if 'image_uris' in c and 'border_crop' in c['image_uris']:
 				translations_img[c['name']][c['lang']] = c['image_uris']['border_crop']
 			elif 'card_faces' in c and 'image_uris' in c['card_faces'][0] and 'border_crop' in c['card_faces'][0]['image_uris']:
