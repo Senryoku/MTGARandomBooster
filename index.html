@@ -49,7 +49,7 @@
 		
 			<div id="controls">
 				<div>
-					<button type="button" onclick="gen_booster()">Generate Booster</button>
+					<button type="button" @click="gen_booster">Generate Booster</button>
 				</div>
 				<div>
 					<button type="button" onclick="copyToClipboard(exportMTGA(app.Boosters.flat())); alert('Boosters exported to clipboard!')">Export All</button>

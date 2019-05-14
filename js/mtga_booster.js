@@ -163,35 +163,35 @@ var app = new Vue({
 			reader.readAsText(file);
 		},
 		gen_booster: function() {
-			let subset = app.CardsByRarity;
-			if(app.SetRestriction != "")
-				subset = app.CardsBySet[app.SetRestriction];
+			let subset = this.CardsByRarity;
+			if(this.SetRestriction != "")
+				subset = this.CardsBySet[this.SetRestriction];
 			
 			// We'll pick cards from a copy of the collection to make sure
 			// we do not end up with more copies of a card than we really have available.
 			let localCollection = {'common':{}, 'uncommon':{}, 'rare':{}, 'mythic':{}};
 			for(r in subset) {
 				for(c of subset[r])
-					localCollection[r][c] = app.Collection[c];
+					localCollection[r][c] = this.Collection[c];
 			}
 			
 			const count_cards = function(coll) { return Object.values(coll).reduce((acc, val) => acc + val, 0); };
 
 			let comm_count = count_cards(localCollection['common']);
-			if(comm_count < 10 * app.BoosterQuantity) {
-				alert(`Not enough cards (${comm_count}/${10 * app.BoosterQuantity} commons) in collection.`);
+			if(comm_count < 10 * this.BoosterQuantity) {
+				alert(`Not enough cards (${comm_count}/${10 * this.BoosterQuantity} commons) in collection.`);
 				return;
 			}
 			
 			let unco_count = count_cards(localCollection['uncommon']);
-			if(unco_count < 3 * app.BoosterQuantity) {
-				alert(`Not enough cards (${unco_count}/${3 * app.BoosterQuantity} uncommons) in collection.`);
+			if(unco_count < 3 * this.BoosterQuantity) {
+				alert(`Not enough cards (${unco_count}/${3 * this.BoosterQuantity} uncommons) in collection.`);
 				return;
 			}
 			
 			let rm_count = count_cards(localCollection['rare']) + count_cards(localCollection['mythic']);
-			if(rm_count < app.BoosterQuantity) {
-				alert(`Not enough cards (${rm_count}/${app.BoosterQuantity} rares & mythics) in collection.`);
+			if(rm_count < this.BoosterQuantity) {
+				alert(`Not enough cards (${rm_count}/${this.BoosterQuantity} rares & mythics) in collection.`);
 				return;
 			}
 			
@@ -207,9 +207,9 @@ var app = new Vue({
 				return {id: c, name: app.Cards[c].name, printed_name: app.Cards[c].printed_name, image_uris: app.Cards[c].image_uris, set: app.Cards[c].set, cmc: app.Cards[c].cmc, collector_number: app.Cards[c].collector_number, colors: app.Cards[c].color_identity, in_booster: app.Cards[c].in_booster};
 			};
 
-			app.Deck = [];
-			app.Boosters = [];
-			for(let b = 0; b < app.BoosterQuantity; ++b) {
+			this.Deck = [];
+			this.Boosters = [];
+			for(let b = 0; b < this.BoosterQuantity; ++b) {
 				let booster = [];
 				
 				 // 1 Rare/Mythic
@@ -233,7 +233,7 @@ var app = new Vue({
 				for(let i = 0; i < 10; ++i) // 10 Commons
 					booster.push(pick_card(localCollection['common']));
 
-				app.Boosters.push(booster);
+				this.Boosters.push(booster);
 			}
 		}
 	},
