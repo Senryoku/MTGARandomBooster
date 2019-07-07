@@ -99,6 +99,7 @@ input[type="button"]:focus {
 	display: inline-block;
 	margin: 0.75em;
 	text-align: center;
+	cursor: pointer;
 }
 
 .card img {

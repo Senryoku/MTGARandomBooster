@@ -8,18 +8,17 @@ import urllib
 import requests
 
 # Removed ana on purpose, this set is (mostly?) useless
-Sets = ['m19', 'xln', 'rix', 'dom', 'grn', 'rna', 'war']
+Sets = ['m19', 'xln', 'rix', 'dom', 'grn', 'rna', 'war', 'm20']
 Langs = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'ru', 'zhs', 'zht']
 
-# I should be using this but its a pain...
 BulkDataURL = 'https://archive.scryfall.com/json/scryfall-all-cards.json'
 BulkDataPath = 'data/scryfall-all-cards.json'
 BulkDataArenaPath = 'data/BulkArena.json'
 FinalDataPath = 'data/MTGACards.json'
 
 if not os.path.isfile(BulkDataPath):
-	# Toto: Auto
-	print("Please download {}".format(BulkDataURL))
+	print("Downloading {}...".format(BulkDataURL))
+	urllib.request.urlretrieve(BulkDataURL, BulkDataPath)
 
 if not os.path.isfile(BulkDataArenaPath):
 	with open(BulkDataPath, 'r', encoding="utf8") as file:
@@ -27,6 +26,8 @@ if not os.path.isfile(BulkDataArenaPath):
 		arena_cards = (o for o in objects if 'arena' in o['games'])
 		cards = []
 		for c in arena_cards:
+			#if(c['lang'] == 'en' and 'arena_id' not in c):
+			#	print("{} ({}, en) doesn't have an arena_id.".format(c['name'], c['set']))
 			cards.append(c)
 		with open(BulkDataArenaPath, 'w') as outfile:
 			json.dump(cards, outfile)
@@ -36,12 +37,14 @@ NonBoosterCards = []
 response = requests.get("https://api.scryfall.com/cards/search?{}".format(urllib.parse.urlencode({'q': 'game:arena -in:booster'})))
 data = json.loads(response.content)
 for c in data['data']:
-	NonBoosterCards.append(c['arena_id'])
+	if('arena_id' in c):
+		NonBoosterCards.append(c['arena_id'])
 while(data["has_more"]):
 	response = requests.get(data["next_page"])
 	data = json.loads(response.content)
 	for c in data['data']:
-		NonBoosterCards.append(c['arena_id'])
+		if('arena_id' in c):
+			NonBoosterCards.append(c['arena_id'])
 			
 with open(BulkDataArenaPath, 'r', encoding="utf8") as file:
 	cards = {}
@@ -67,7 +70,7 @@ with open(BulkDataArenaPath, 'r', encoding="utf8") as file:
 			cards[c['arena_id']] = {}
 		if c['lang'] == 'en':
 			selection = {key:value for key,value in c.items() if key in {'name', 'set', 'cmc', 'rarity', 'collector_number', 'color_identity'}}
-			if c['arena_id'] in NonBoosterCards:
+			if c['arena_id'] in NonBoosterCards or 'Basic Land' in c['type_line']:
 				selection['in_booster'] = False;
 			if 'image_uris' in c and 'border_crop' in c['image_uris']:
 				translations_img[c['name']][c['lang']] = c['image_uris']['border_crop']
