@@ -26,7 +26,7 @@ Vue.component('card', {
 var app = new Vue({
 	el: '#main-vue',
 	data: {
-		Sets: ["m19", "xln", "rix", "dom", "grn", "rna", "war"],
+		Sets: ["m19", "xln", "rix", "dom", "grn", "rna", "war", "m20"],
 		Cards: {},
 		Collection: {},
 		CollectionDate: [],
