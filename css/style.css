@@ -15,6 +15,14 @@ select, option, input, button {
 	margin: 0.25em;
 }
 
+a {
+	color: #BBF;
+}
+
+a:visited {
+	color: #BBF;
+}
+
 .button,
 button,
 input[type="submit"],

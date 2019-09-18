@@ -17,6 +17,8 @@
 	<div id="main-vue">
 		<div v-show="!CardsLoaded" class="loading">Loading...</div>
 		
+		<div style="padding:0.5em; background-color: #333;">MTGARandomBooster is not updated anymore! Please visit <a href="https://mtgadraft.herokuapp.com/">MTGADraft</a> which has the same features, and more!</div>
+		
 		<div id="log-parse" v-bind:class="{collapsed: Collection && !isEmpty(Collection) && HideCollectionManager}">
 			<h2>Select your MTGA log file</h2>
 			<input type="file" id="file-input" @change="parseMTGALog" />
